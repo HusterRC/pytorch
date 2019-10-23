@@ -77,11 +77,11 @@ static Variable applySlice(const Variable& self, int64_t dim, PyObject* slice, b
     throw python_error();
   }
   if (step == 0) {
-    throw ValueError("step cannot be zero");
+    throw ValueError("step cannot be zero");  // yf225 TODO: test that this still throws after merge
   }
   if (step < 0) {
     // TODO: implement negative step
-    throw ValueError("negative step not yet supported");
+    throw ValueError("negative step not yet supported");  // yf225 TODO: test that this still throws after merge
   }
 
   PySliceObject* sliceobj = (PySliceObject*) slice;
@@ -118,7 +118,7 @@ static Variable applySelect(const Variable& self, int64_t dim, PyObject* index, 
   if (unpacked_index == 0 && dim == 0 && self.dim() == 0) {
     throw IndexError(
         "invalid index of a 0-dim tensor. "
-        "Use tensor.item() to convert a 0-dim tensor to a Python number");
+        "Use tensor.item() to convert a 0-dim tensor to a Python number");  // yf225 TODO: test that this still throws after merge
   }
   int64_t size = self.size(dim);
   if (unpacked_index < -size || unpacked_index >= size) {
@@ -149,7 +149,7 @@ static Variable valueToTensor(c10::TensorOptions options, PyObject* value) {
   throw TypeError(
     "can't assign a %s to a %s",
     Py_TYPE(value)->tp_name,
-    torch::utils::type_to_string(getNonVariableDeprecatedTypeProperties(options.backend(), typeMetaToScalarType(options.dtype()))).c_str());
+    torch::utils::type_to_string(getNonVariableDeprecatedTypeProperties(options.backend(), typeMetaToScalarType(options.dtype()))).c_str());  // yf225 TODO: test that this still throws after merge
 }
 
 static Variable boolToIndexingTensor(const Variable& self, bool value) {
@@ -174,7 +174,7 @@ static Variable applySlicing(const Variable& self, PyObject* index, variable_lis
   };
 
   if (specified_dims > self.dim()) {
-    throw IndexError("too many indices for tensor of dimension %d", (int)self.dim());
+    throw IndexError("too many indices for tensor of dimension %d", (int)self.dim());  // yf225 TODO: test that this still throws after merge
   }
 
   Variable result = self;
