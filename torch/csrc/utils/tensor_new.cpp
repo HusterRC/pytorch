@@ -66,8 +66,7 @@ Backend backendToBackendOfDeviceType(Backend b, DeviceType d) {
 TensorOptions options(c10::TensorTypeId type_id, at::ScalarType scalar_type, const c10::optional<Device>& device=c10::nullopt) {
   auto options = TensorOptions(scalar_type)
       .device(computeDeviceType(type_id))
-      .layout(layout_from_backend(tensorTypeIdToBackend(type_id)))
-      .is_variable(true);
+      .layout(layout_from_backend(tensorTypeIdToBackend(type_id)));
   if (device.has_value()) {
     return options.device(device);
   }
@@ -277,7 +276,11 @@ Tensor internal_new_from_data(
 
   auto sizes = compute_sizes(data);
   ScalarType inferred_scalar_type = type_inference ? infer_scalar_type(data) : scalar_type;
-  auto tensor = autograd::make_variable(at::empty(sizes, at::initialTensorOptions().dtype(inferred_scalar_type).pinned_memory(pin_memory)), /*requires_grad=*/false);
+  // This exists to prevent us from tracing the call to empty().  The actual
+  // autograd code doesn't really matter, because requires_grad is always false
+  // here.
+  at::AutoNonVariableTypeMode guard;
+  auto tensor = at::empty(sizes, at::initialTensorOptions().dtype(inferred_scalar_type).pinned_memory(pin_memory));
   recursive_store(
       (char*)tensor.data_ptr(), tensor.sizes(), tensor.strides(), 0,
       inferred_scalar_type, tensor.dtype().itemsize(), data);
